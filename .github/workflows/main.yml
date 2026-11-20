@@ -7,6 +7,8 @@ on:
   workflow_dispatch:
 env:
   CHECK_LABEL: training
+permissions:
+  contents: read
 jobs:
   lint:
     runs-on: ubuntu-26.04
@@ -54,3 +56,13 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           WORKFLOW_NAME: ${{ github.workflow }}
         run: printf '%s\n' "$LABEL" "$EVENT_NAME" "$WORKFLOW_NAME"
+  work_secrects:
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Check training secret
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        env:
+          TRAINING_SECRET: ${{ secrets.TRAINING_SECRET }}
+        run: |
+          test -n "$TRAINING_SECRET"
+          echo 'Training secret is available'
