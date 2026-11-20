@@ -6,7 +6,7 @@ on:
     branches: [main]
   workflow_dispatch:
 jobs:
-  check:
+  parallel-demo:
     steps:
     - uses: actions/checkout@v7
     - uses: jdx/mise-action@v5
