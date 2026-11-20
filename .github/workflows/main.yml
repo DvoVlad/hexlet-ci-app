@@ -9,13 +9,16 @@ jobs:
   parallel-demo:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v7.0.1
-    - uses: jdx/mise-action@v5.2.10
+    - uses: actions/checkout@v7
+    - uses: jdx/mise-action@v5
     - run: mise run setup
-    - parallel:
-        - name: Lint
-          run: mise run lint
-        - name: Test
-          run: mise run test
-    - name: Checks completed
-      run: echo 'Both checks passed'
+    - name: Test
+      id: tests
+      background: true
+      run: mise run test
+    - name: Lint
+      run: mise run lint
+    - name: Wait for tests
+      wait: tests
+    - name: Wait for remaining work
+      wait-all:
