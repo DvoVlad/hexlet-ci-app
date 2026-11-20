@@ -6,24 +6,34 @@ on:
     branches: [main]
   workflow_dispatch:
 jobs:
-  lint:
+  parallel-demo:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7.0.1
+    - uses: jdx/mise-action@v5.2.10
+    - run: mise run setup
+    - name: Test
+      id: tests
+      background: true
+      run: mise run test
+    - name: Lint
+      run: mise run lint
+    - name: Wait for tests
+      wait: tests
+    - name: Wait for remaining work
+      wait-all:
+  server-demo:
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: jdx/mise-action@v5.2.10
-      - run: mise run setup
-      - run: mise run lint
-
-  test:
-    runs-on: ubuntu-26.04
-    steps:
-      - uses: actions/checkout@v7.0.1
-      - uses: jdx/mise-action@v5.2.10
-      - run: mise run setup
-      - run: mise run test
-  verify:
-    name: CI result
-    needs: [lint, test]
-    runs-on: ubuntu-26.04
-    steps:
-      - run: echo "All checks passed"
+      - name: Start demo server
+        id: server
+        background: true
+        run: mise run serve-demo
+      - name: Wait for readiness
+        run: curl --fail --retry 60 --retry-connrefused --retry-delay 1 --max-time 2 --retry-max-time 120 http://127.0.0.1:3000/
+      - name: Check response
+        run: test "$(curl --fail --silent http://127.0.0.1:3000/)" = ready
+      - name: Stop demo server
+        cancel: server
