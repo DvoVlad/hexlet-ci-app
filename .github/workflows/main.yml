@@ -45,3 +45,9 @@ jobs:
       - name: Manual run information
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: echo 'This step was requested manually'
+      - name: Show run information
+        env:
+          LABEL: ${{ vars.CI_LABEL || 'training' }}
+          EVENT_NAME: ${{ github.event_name }}
+          WORKFLOW_NAME: ${{ github.workflow }}
+        run: printf '%s\n' "$LABEL" "$EVENT_NAME" "$WORKFLOW_NAME"
