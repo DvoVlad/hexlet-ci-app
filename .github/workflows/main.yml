@@ -23,6 +23,9 @@ jobs:
       - uses: jdx/mise-action@v5.2.10
       - run: mise run setup
       - run: mise run test
+      - name: Tests are failing
+        if: ${{ failure() }}
+        run: echo 'Tests fail now!'
   verify:
     name: CI result
     needs: [lint, test]
