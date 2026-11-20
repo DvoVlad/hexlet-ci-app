@@ -66,3 +66,8 @@ jobs:
         run: |
           test -n "$TRAINING_SECRET"
           echo 'Training secret is available'
+      - name: Read repository information
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh api "repos/$GITHUB_REPOSITORY" --jq .full_name
