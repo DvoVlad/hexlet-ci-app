@@ -38,7 +38,7 @@ jobs:
       - name: Locate pnpm store
         id: pnpm-store
         run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@v6
+      - uses: actions/cache@v6.1.0
         id: dependencies
         with:
           path: ${{ steps.pnpm-store.outputs.path }}
