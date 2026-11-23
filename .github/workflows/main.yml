@@ -9,6 +9,10 @@ env:
   CHECK_LABEL: training
 permissions:
   contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+  timeout-minutes: 15
 jobs:
   lint:
     runs-on: ubuntu-26.04
@@ -31,7 +35,21 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: jdx/mise-action@v5.2.10
+      - name: Locate pnpm store
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        id: dependencies
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-${{ runner.arch }}-
       - run: mise run setup
+      - name: Show cache result
+        env:
+          CACHE_HIT: ${{ steps.dependencies.outputs.cache-hit }}
+        run: printf 'Exact cache hit = %s\n' "$CACHE_HIT"
       - run: mise run test
       - name: Tests are failing
         if: ${{ failure() }}
